@@ -6,7 +6,6 @@ const fs = require("fs");
 const path = require("path");
 const uploadDir = path.join(__dirname, "..", "..", "assets", "uploads");
 const helperMixin = require("../../mixins/helper.mixin");
-var convertapi = require("convertapi")(`${process.env.CONVERT_API_KEY}`);
 
 // const { convert } = require("pdf-poppler");
 /**

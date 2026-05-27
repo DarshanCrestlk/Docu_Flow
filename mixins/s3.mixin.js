@@ -49,7 +49,8 @@ module.exports = {
 				  );
 			try {
 				const stats = await fs.promises.stat(filePath);
-				const size = stats.size / 1024 ; // Convert to KB
+				// const size = stats.size / 1024; // Convert to KB
+				const size = stats.size; // bytes
 				console.log("File size:", size, "KB");
 				const fileStream = fs.createReadStream(filePath);
 				// const fileBuff = fs.readFileSync(filePath);
@@ -325,32 +326,27 @@ module.exports = {
 		},
 
 		//Delete Multiple Files at one time [1000]
-		async bulkDeleteFromS3(
-			fileKeyArray,
-			cb = (err, data) => {
-				if (err) console.log("Error deleting objects:", err);
-				else {
-					console.log("Deleted objects:", data.Deleted);
-					return data.Deleted;
-				}
-			}
-		) {
-			const params = {
-				Bucket: process.env.AWS_S3_BUCKET_NAME,
-				Delete: {
-					Objects: fileKeyArray,
-					Quiet: false,
-				},
-			};
+		async bulkDeleteFromS3(fileKeyArray) {
+			try {
+				const params = {
+					Bucket: process.env.AWS_S3_BUCKET_NAME,
+					Delete: {
+						Objects: fileKeyArray,
+						Quiet: false,
+					},
+				};
 
-			s3.deleteObjects(params);
-			// s3.deleteObjects(params, (err, data) => {
-			// 	if (err) console.log("Error deleting objects:", err);
-			// 	else {
-			// 		console.log("Deleted objects:", data.Deleted);
-			// 		return data.Deleted;
-			// 	}
-			// });
+				// s3.deleteObjects(params);
+				s3.deleteObjects(params, (err, data) => {
+					if (err) console.log("Error deleting objects:", err);
+					else {
+						console.log("Deleted objects:", data.Deleted);
+						return data.Deleted;
+					}
+				});
+			} catch (err) {
+				console.error("Error deleting objects:", err);
+			}
 		},
 
 		//Update File data
@@ -408,6 +404,7 @@ module.exports = {
 				console.log(error);
 			}
 		},
+
 		async copyObject(fileInfo, keyPrefix) {
 			try {
 				let lastSlashIndex = fileInfo?.key?.lastIndexOf("/");
@@ -470,6 +467,20 @@ module.exports = {
 					console.error("Error checking suppression list:", error);
 					throw error;
 				}
+			}
+		},
+
+		getKeyFromUrl(url) {
+			try {
+				const s3Object = url.split("/");
+				let key = s3Object.slice(3).join("/");
+				key = decodeURIComponent(key);
+				//if key has + in it, replace it with space
+				key = key.replace(/\+/g, " ");
+				return key;
+			} catch (error) {
+				console.error("Error extracting key from URL:", error);
+				throw error;
 			}
 		},
 	},

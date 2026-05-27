@@ -9,7 +9,13 @@ const fs = require("fs");
 const { P12Signer } = require("@signpdf/signer-p12");
 const { MoleculerError } = require("moleculer").Errors;
 const ShortUniqueId = require("short-unique-id");
-const { PDFDocument, PDFName, StandardFonts, rgb } = require("pdf-lib");
+const {
+	PDFDocument,
+	PDFName,
+	StandardFonts,
+	rgb,
+	degrees,
+} = require("pdf-lib");
 const { pdflibAddPlaceholder } = require("@signpdf/placeholder-pdf-lib");
 const signpdf = require("@signpdf/signpdf").default;
 const { sequelize } = require("../../mixins/db/db.js");
@@ -2334,36 +2340,6 @@ async function sendEmailsToRecipients(
 						})
 					);
 
-					// 		const mailData =
-					// 			await getEmailTemplateAndSendMail.call(
-					// 				this,
-					// 				oldFormData?.id,
-					// 				{
-					// 					name: recipient?.dataValues?.name,
-					// 					email: recipient?.dataValues?.email,
-					// 					token: recipient?.dataValues?.token,
-					// 					role: recipient?.dataValues?.role,
-					// 				},
-					// 				{
-					// 					title: title,
-					// 					user: {
-					// 						full_name:
-					// 							ctx.meta?.user?.full_name,
-					// 					},
-					// 					company: {
-					// 						name: oldFormData?.dataValues
-					// 							?.company?.name,
-					// 						id: oldFormData?.dataValues
-					// 							?.company?.id,
-					// 					},
-					// 				},
-					// 				"document_viewer",
-					// 				false
-					// 			);
-					// 		return mailData;
-					// 	})
-					// ));
-
 					const mailData =
 						recipientMailData?.length > 0 &&
 						recipientMailData.filter(Boolean);
@@ -2374,255 +2350,17 @@ async function sendEmailsToRecipients(
 							trackEvent: true,
 						});
 					}
-
-					// const pendingRecipient = signer[0];
-
-					// // send emil to sender
-					// if (pendingRecipient) {
-					// 	const isSuppressed = await this.isEmailSuppressed(
-					// 		pendingRecipient?.email
-					// 	);
-
-					// 	await this.settings.models.pdfFormRecipients.update(
-					// 		{
-					// 			status: isSuppressed ? "bounced" : "mailed",
-					// 		},
-					// 		{
-					// 			where: {
-					// 				company_id: companyData?.data?.id,
-					// 				form_id: oldFormData?.id,
-					// 				id: pendingRecipient?.id,
-					// 			},
-					// 			// transaction: t,
-					// 		}
-					// 	);
-					// 	const emailData =
-					// 		pendingRecipient &&
-					// 		(await getEmailTemplateAndSendMail.call(
-					// 			this,
-					// 			oldFormData?.id,
-					// 			{
-					// 				name: pendingRecipient?.dataValues?.name,
-					// 				email: pendingRecipient?.dataValues?.email,
-					// 				token: pendingRecipient?.dataValues?.token,
-					// 				role: pendingRecipient?.dataValues?.role,
-					// 			},
-					// 			{
-					// 				title: title,
-					// 				user: {
-					// 					full_name: ctx.meta?.user?.full_name,
-					// 				},
-					// 				company: {
-					// 					name: oldFormData?.dataValues?.company
-					// 						?.name,
-					// 					id: oldFormData?.dataValues?.company
-					// 						?.id,
-					// 				},
-					// 			},
-					// 			"document_sign_request",
-					// 			false,
-					// 			emailSubject,
-					// 			emailTemplate
-					// 		));
-
-					// 	pendingRecipient &&
-					// 		historyArr.push({
-					// 			activity: `Document has been sent to  ${pendingRecipient?.dataValues?.name}`,
-					// 			action: "mailed",
-					// 			form_id: oldFormData?.id,
-					// 			company_id:
-					// 				oldFormData?.dataValues?.company?.id,
-					// 			performer_name: "System",
-					// 		});
-
-					// 	// console.log(
-					// 	// 	"**************** Added the new signer request send mail ***********************",
-					// 	// 	emailData
-					// 	// );
-					// 	if (emailData) {
-					// 		this.broker.call("sesEmail.sendSliceSealForm", {
-					// 			mailArr: [emailData],
-					// 			trackEvent: true,
-					// 		});
-					// 	}
-					// } else {
-					// 	// there is no signer it means only viewers are there
-					// 	isFormCompleted = true;
-					// }
 				}
-				// else {
-				// 	// we need to find the first pending recipient
-				// 	const pendingRecipients =
-				// 		await this.settings.models.pdfFormRecipients.findAll({
-				// 			where: {
-				// 				company_id: companyData?.data?.id,
-				// 				status: "pending",
-				// 				form_id: oldFormData?.id,
-				// 			},
-				// 			order: [["r_priority", "ASC"]],
-				// 		});
-
-				// 	const { signer, viewer: viewerRecipients } =
-				// 		identifySignerAndViewer(pendingRecipients);
-
-				// 	// send email to all In between Recipients
-				// 	const viewerMailData =
-				// 		viewerRecipients?.length > 0 &&
-				// 		(await Promise.all(
-				// 			viewerRecipients.map(async (recipient) => {
-				// 				const isSuppressed =
-				// 					recipient &&
-				// 					(await this.isEmailSuppressed(
-				// 						recipient?.email
-				// 					));
-
-				// 				await this.settings.models.pdfFormRecipients.update(
-				// 					{
-				// 						status: isSuppressed
-				// 							? "bounced"
-				// 							: "mailed",
-				// 					},
-				// 					{
-				// 						where: {
-				// 							company_id: companyData?.data?.id,
-				// 							form_id: oldFormData?.id,
-				// 							id: recipient?.id,
-				// 						},
-				// 						// transaction: t,
-				// 					}
-				// 				);
-
-				// 				const mailData =
-				// 					await getEmailTemplateAndSendMail.call(
-				// 						this,
-				// 						oldFormData?.id,
-				// 						{
-				// 							name:
-				// 								recipient?.dataValues?.name ||
-				// 								recipient?.name,
-				// 							email:
-				// 								recipient?.dataValues?.email ||
-				// 								recipient?.email,
-				// 							token:
-				// 								recipient?.dataValues?.token ||
-				// 								recipient?.token,
-				// 							role:
-				// 								recipient?.dataValues?.role ||
-				// 								recipient?.role,
-				// 						},
-				// 						{
-				// 							title: title,
-				// 							user: {
-				// 								full_name:
-				// 									ctx.meta?.user?.full_name,
-				// 							},
-				// 							company: {
-				// 								name: oldFormData?.dataValues
-				// 									?.company?.name,
-				// 								id: oldFormData?.dataValues
-				// 									?.company?.id,
-				// 							},
-				// 						},
-				// 						"document_viewer",
-				// 						false
-				// 					);
-				// 				return mailData;
-				// 			})
-				// 		));
-
-				// 	const mailData =
-				// 		viewerMailData?.length > 0 &&
-				// 		viewerMailData?.filter(
-				// 			(v) => v !== undefined || v !== null
-				// 		);
-
-				// 	if (mailData) {
-				// 		this.broker.call("sesEmail.sendSliceSealForm", {
-				// 			mailArr: mailData,
-				// 			trackEvent: true,
-				// 		});
-				// 	}
-
-				// 	const pendingRecipient = signer[0];
-
-				// 	// send emil to sender
-				// 	if (pendingRecipient) {
-				// 		const isSuppressed = await this.isEmailSuppressed(
-				// 			pendingRecipient?.email
-				// 		);
-
-				// 		await this.settings.models.pdfFormRecipients.update(
-				// 			{
-				// 				status: isSuppressed ? "bounced" : "mailed",
-				// 			},
-				// 			{
-				// 				where: {
-				// 					company_id: companyData?.data?.id,
-				// 					form_id: oldFormData?.id,
-				// 					id: pendingRecipient?.id,
-				// 				},
-				// 				// transaction: t,
-				// 			}
-				// 		);
-				// 		const emailData =
-				// 			pendingRecipient &&
-				// 			(await getEmailTemplateAndSendMail.call(
-				// 				this,
-				// 				oldFormData?.id,
-				// 				{
-				// 					name:
-				// 						pendingRecipient?.dataValues?.name ||
-				// 						pendingRecipient?.name,
-				// 					email:
-				// 						pendingRecipient?.dataValues?.email ||
-				// 						pendingRecipient?.email,
-				// 					token:
-				// 						pendingRecipient?.dataValues?.token ||
-				// 						pendingRecipient?.token,
-				// 					role:
-				// 						pendingRecipient?.dataValues?.role ||
-				// 						pendingRecipient?.role,
-				// 				},
-				// 				{
-				// 					title: title,
-				// 					user: {
-				// 						full_name: ctx.meta?.user?.full_name,
-				// 					},
-				// 					company: {
-				// 						name: oldFormData?.dataValues?.company
-				// 							?.name,
-				// 						id: oldFormData?.dataValues?.company
-				// 							?.id,
-				// 					},
-				// 				},
-				// 				"document_sign_request",
-				// 				false,
-				// 				emailSubject,
-				// 				emailTemplate
-				// 			));
-
-				// 		// console.log(
-				// 		// 	"**************** Added the new signer request send mail ***********************",
-				// 		// 	emailData
-				// 		// );
-				// 		if (emailData) {
-				// 			this.broker.call("sesEmail.sendSliceSealForm", {
-				// 				mailArr: [emailData],
-				// 				trackEvent: true,
-				// 			});
-				// 		}
-				// 	} else {
-				// 		// there is no signer it means only viewers are there
-				// 		isFormCompleted = true;
-				// 	}
-				// }
 			}
 			if (
-				recipientData?.find((r) => r?.role === "signer")?.length ===
-					0 &&
+				(recipientData?.find((r) => r?.role === "signer")?.length ===
+					0 ||
+					recipientData?.length === 0) &&
 				mode === "edit" &&
 				contentType === "form"
 			) {
+				// find the recipients
+
 				// it means no recipients are added
 				isFormCompleted = true;
 			}
@@ -3002,18 +2740,26 @@ async function sendEmailsToRecipients(
 			}
 
 			// Added the history
-			await this.settings.models.pdfFormHistory.create(
-				{
-					activity: "Document has been Completed",
-					action: "completed",
-					form_id: formId,
-					company_id: companyData?.data?.id,
-					performer_name: "System",
-				}
-				// {
-				// 	transaction: t,
-				// }
-			);
+			// await this.settings.models.pdfFormHistory.create(
+			// 	{
+			// 		activity: "Document has been Completed",
+			// 		action: "completed",
+			// 		form_id: formId,
+			// 		company_id: companyData?.data?.id,
+			// 		performer_name: "System",
+			// 	}
+			// 	// {
+			// 	// 	transaction: t,
+			// 	// }
+			// );
+
+			historyArr.push({
+				activity: "Document has been Completed",
+				action: "completed",
+				form_id: formId,
+				company_id: companyData?.data?.id,
+				performer_name: "System",
+			});
 
 			// send email to sender
 
@@ -6167,6 +5913,13 @@ async function activityHistory(ctx) {
 			include: [
 				{
 					model: this.settings.models.users,
+					attributes: [
+						"full_name",
+						"email",
+						"id",
+						"profile_bg_color",
+						"profile_pic",
+					],
 				},
 			],
 			limit,
@@ -6418,7 +6171,7 @@ async function checkExpiration(ctx) {
 							},
 						],
 					},
-					attributes: ["id", "status"],
+					attributes: ["id", "status", "token"],
 				},
 				{
 					model: this.settings.models.users,
@@ -6449,6 +6202,7 @@ async function checkExpiration(ctx) {
 					action: "expired",
 					form_id: f.id,
 					performer_name: "System",
+					company_id: f?.company_id,
 				})),
 				{
 					transaction: t,
@@ -6463,10 +6217,11 @@ async function checkExpiration(ctx) {
 						{
 							name: f?.dataValues.user?.full_name,
 							email: f?.dataValues?.user?.email,
+							// token: f?.dataValues?.form_token,
 						}, //f?.dataValues?.users,
 						{
 							title: f?.dataValues?.title,
-							form_url: f?.dataValues?.form_url,
+							formUrl: `${process.env.CLIENT_URL}/docuflow?nav=Documents&token=${f?.dataValues?.form_token}`,
 							user: {
 								email: f?.dataValues?.user?.email,
 								full_name: f?.dataValues?.user?.full_name,
@@ -6539,12 +6294,7 @@ async function sendEmailReminder() {
 
 		// Get reminder days from settings for this company
 		const reminderSettings = await this.settings.models.settings.findOne({
-			attributes: [
-				"reminder_days",
-				"validity_type",
-				"date_format",
-				"time_format",
-			],
+			attributes: ["reminder_days", "date_format", "time_format"],
 		});
 
 		const reminderDays = reminderSettings?.dataValues?.reminder_days
@@ -7016,8 +6766,59 @@ async function drawOnPDF(
 		let signImgFile;
 		let initialFile;
 
+		// Helper function to get page rotation and dimensions
+		const getPageInfo = (page) => {
+			const rotation = page.getRotation().angle;
+			const width = page.getWidth();
+			const height = page.getHeight();
+
+			// Get effective dimensions after rotation
+			let effectiveWidth = width;
+			let effectiveHeight = height;
+
+			// if (rotation === 90 || rotation === 270) {
+			//   effectiveWidth = height;
+			//   effectiveHeight = width;
+			// }
+
+			return { rotation, width, height, effectiveWidth, effectiveHeight };
+		};
+
+		// Helper function to transform coordinates based on page rotation
+		const transformCoordinates = (x, y, pageInfo) => {
+			const { rotation, effectiveWidth, effectiveHeight } = pageInfo;
+
+			// Normalize rotation to 0-359 range
+			const normalizedRotation = ((rotation % 360) + 360) % 360;
+
+			switch (normalizedRotation) {
+				case 0:
+					return { x, y };
+				case 90:
+					return {
+						x: effectiveHeight - y,
+						y: x,
+					};
+				case 180:
+					return {
+						x: effectiveWidth - x,
+						y: effectiveHeight - y,
+					};
+				case 270:
+					return {
+						x: effectiveWidth - (effectiveHeight - y),
+						y: effectiveHeight - x,
+					};
+				default:
+					return { x, y };
+			}
+		};
+
 		// Helper function to draw text on page
 		const drawText = (text, object, page, pageHeight, font = undefined) => {
+			// Get page rotation info
+			const pageInfo = getPageInfo(page);
+
 			// Initial position and configuration
 			const margin = 40;
 			const rightMargin = 5;
@@ -7033,6 +6834,11 @@ async function drawOnPDF(
 					(object?.height * object?.scale_y + textSize) / 2) /
 					zoomLevel +
 				bottomMargin;
+
+			// Transform coordinates based on page rotation
+			const transformedCoords = transformCoordinates(x, y, pageInfo);
+			x = transformedCoords.x;
+			y = transformedCoords.y;
 
 			// Check if it's a textarea field
 			if (object?.rows > 1) {
@@ -7134,6 +6940,7 @@ async function drawOnPDF(
 						y: startY - index * lineHeight,
 						size: textSize,
 						font,
+						rotate: degrees(pageInfo.rotation),
 					});
 				});
 			} else {
@@ -7228,6 +7035,7 @@ async function drawOnPDF(
 							y,
 							size: textSize,
 							font,
+							rotate: degrees(pageInfo.rotation),
 						});
 					} else {
 						// Text needs to be broken into chunks
@@ -7282,6 +7090,7 @@ async function drawOnPDF(
 							y: lineY,
 							size: textSize,
 							font,
+							rotate: degrees(pageInfo.rotation),
 						});
 					}
 				});
@@ -7349,12 +7158,26 @@ async function drawOnPDF(
 							"M21.03 5.72a.75.75 0 0 1 0 1.06l-11.5 11.5a.747.747 0 0 1-1.072-.012l-5.5-5.75a.75.75 0 1 1 1.084-1.036l4.97 5.195L19.97 5.72a.75.75 0 0 1 1.06 0Z",
 					};
 
+					// Get page rotation info for checkbox
+					const checkboxPageInfo = getPageInfo(page);
+
+					// Transform coordinates for checkbox
+					const checkboxX = object?.x_coordinate / 1.75;
+					const checkboxY =
+						(pageHeight * 1.75 - object?.y_coordinate) / 1.75;
+					const transformedCheckboxCoords = transformCoordinates(
+						checkboxX,
+						checkboxY,
+						checkboxPageInfo
+					);
+
 					page.drawSvgPath(svgPaths[object?.type], {
-						x: object?.x_coordinate / 1.75,
-						y: (pageHeight * 1.75 - object?.y_coordinate) / 1.75,
+						x: transformedCheckboxCoords.x,
+						y: transformedCheckboxCoords.y,
 						color: rgb(0, 0, 0),
 						scale: object?.scale_x / (1.75 * devicePixelRatio), // Adjust scale as necessary
 						borderWidth: 0,
+						rotate: degrees(checkboxPageInfo.rotation),
 					});
 				}
 			} else if (object?.type === "radio") {
@@ -7363,18 +7186,30 @@ async function drawOnPDF(
 						radio: "M12.5 0C5.55 0 0 5.55 0 12.5S5.55 25 12.5 25 25 19.45 25 12.5 19.45 0 12.5 0z",
 					};
 					const selectedOption = object?.pdf_form_radio_buttons?.find(
-						(item) => item?.id === fieldValue
+						(item) => item?.id === Number(fieldValue)
 					);
 					if (selectedOption) {
+						// Get page rotation info for radio button
+						const radioPageInfo = getPageInfo(page);
+
+						// Transform coordinates for radio button
+						const radioX = selectedOption?.x_coordinate / 1.75;
+						const radioY =
+							(pageHeight * 1.75 - selectedOption?.y_coordinate) /
+							1.75;
+						const transformedRadioCoords = transformCoordinates(
+							radioX,
+							radioY,
+							radioPageInfo
+						);
+
 						page.drawSvgPath(svgPaths[object?.type], {
-							x: selectedOption?.x_coordinate / 1.75,
-							y:
-								(pageHeight * 1.75 -
-									selectedOption?.y_coordinate) /
-								1.75,
+							x: transformedRadioCoords.x,
+							y: transformedRadioCoords.y,
 							color: rgb(0, 0, 0),
 							scale: object?.scale_x / (1.75 * devicePixelRatio),
 							borderWidth: 0,
+							rotate: degrees(radioPageInfo.rotation),
 						});
 					}
 				}
@@ -7429,16 +7264,29 @@ async function drawOnPDF(
 						const aspectRatio = img.width / img.height;
 						const calculatedWidth = height * aspectRatio;
 
+						// Get page rotation info for signature/initial
+						const signaturePageInfo = getPageInfo(page);
+
+						// Transform coordinates for signature/initial
+						const signatureX = object?.x_coordinate / 1.75;
+						const signatureY =
+							(pageHeight * 1.75 -
+								object?.y_coordinate -
+								height * 2) /
+							1.75;
+						const transformedSignatureCoords = transformCoordinates(
+							signatureX,
+							signatureY,
+							signaturePageInfo
+						);
+
 						page.drawImage(img, {
-							x: object?.x_coordinate / 1.75,
-							y:
-								(pageHeight * 1.75 -
-									object?.y_coordinate -
-									height * 2) /
-								1.75,
+							x: transformedSignatureCoords.x,
+							y: transformedSignatureCoords.y,
 							width: calculatedWidth,
 							height,
 							blendMode: "Multiply",
+							rotate: degrees(signaturePageInfo.rotation),
 						});
 					}
 				}
@@ -7823,7 +7671,7 @@ color: #1f2937;
 <body>
 <header>
 <div class="logo">
-<img src="https://devecs.slicehr.com/static/media/slice_logo_v1%20(1).53aec5b8af82a6220b78735622906aed.svg" alt="Company Logo">
+<img src="https://dev-slice-hrms.s3.us-east-2.amazonaws.com/SLICE+HRMS/images/company/myslice-people-logo.svg" alt="Company Logo">
 </div>
 <div class="header-title">Audit Log</div>
 </header>
@@ -8013,6 +7861,9 @@ async function getEmailTemplateAndSendMail(
 			"${expiration_date}": formDetails?.expirationDate,
 			// Add more mappings as needed
 		};
+
+		console.log(slugValues, "slugValues");
+		console.log(formDetails?.formUrl, "formDetails?.formUrl");
 
 		// console.log("EMAIL TEMPLATE", finalTemplate);
 
@@ -9172,6 +9023,106 @@ async function extendExpirationDate(ctx) {
 	}
 }
 
+async function extendExpirationDateByToken(ctx) {
+	try {
+		const { token } = ctx.params;
+		const user_id = ctx?.meta?.user?.id;
+
+		// const isTokenValid =
+		// 	await this.settings.models.pdfFormRecipients.findOne({
+		// 		where: {
+		// 			token,
+		// 		},
+		// 		attributes: ["id", "form_id", "company_id"],
+		// 	});
+
+		// if (!isTokenValid) {
+		// 	return {
+		// 		code: RESPONSES.status.not_found,
+		// 		message: "Token not available",
+		// 	};
+		// }
+
+		//check form is expired or not
+		const formDetails = await this.settings.models.pdfForms.findOne({
+			where: {
+				form_token: token,
+				status: "expired",
+			},
+			attributes: ["id", "company_id", "created_by"],
+		});
+
+		if (!formDetails) {
+			return {
+				code: RESPONSES.status.not_found,
+				message: "Token not available",
+			};
+		}
+
+		if (formDetails?.dataValues?.created_by !== user_id) {
+			return {
+				code: RESPONSES.status.unauthorized,
+				message: "You are not authorized to access this form",
+			};
+		}
+
+		// find the company settings by company id
+		// const companySettings = await this.broker.call(
+		// 	"settings.getSettingsList",
+		// 	{
+		// 		company_id: formDetails?.dataValues?.company_id,
+		// 	}
+		// );
+
+		// if (!companySettings) {
+		// 	return {
+		// 		code: RESPONSES.status.not_found,
+		// 		message: "Token not available",
+		// 	};
+		// }
+
+		// Generate expiration date from current date plus document_link_valid_days
+		// const days =
+		// 	parseInt(companySettings?.data?.document_link_valid_days, 10) || 0;
+		// const newExpirationDate = new Date(
+		// 	Date.now() + days * 24 * 60 * 60 * 1000
+		// );
+
+		// // update the form expiration date
+		// await this.settings.models.pdfForms.update(
+		// 	{
+		// 		expiration_date: newExpirationDate,
+		// 		status: "pending",
+		// 	},
+		// 	{
+		// 		where: {
+		// 			id: formDetails?.dataValues?.id,
+		// 			company_id: formDetails?.dataValues?.company_id,
+		// 		},
+		// 	}
+		// );
+
+		// await resendEmails.call(this, {
+		// 	params: {
+		// 		id: formDetails?.dataValues?.id,
+		// 		company_id: formDetails?.dataValues?.company_id,
+		// 	},
+		// });
+
+		return {
+			code: RESPONSES.status.success,
+			message: RESPONSES.messages.success,
+			data: formDetails,
+		};
+	} catch (error) {
+		return {
+			code: RESPONSES.status.error,
+			message: RESPONSES.messages.internal_server_error,
+			error: error.message,
+		};
+	}
+}
+
 async function getUserSignature(ctx) {
 	try {
 		const { id, email } = ctx.params;
@@ -10297,12 +10248,13 @@ function updateRecipientDetailsBasedOnPriorityInArray(
 
 			if (!firstSigner) {
 				// it means no signer is present in the array it means last users are viewer
-				// so we will update the status of the viewers to pending
+				// so we will update the status of the viewers
 				const updatedArray = sortedArray.map((r) => {
 					if (r.role === "viewer") {
 						return {
 							...r,
-							status: "mailed",
+							status:
+								r?.status === "viewed" ? "viewed" : "mailed",
 							...(r?.status ? { isOld: true } : { isNew: true }),
 							...(formStatus === "draft"
 								? { isDraftUser: true }
@@ -10330,7 +10282,7 @@ function updateRecipientDetailsBasedOnPriorityInArray(
 					// if status is not present then we will isNew to true
 					return {
 						...r,
-						status: "mailed",
+						status: r?.status === "viewed" ? "viewed" : "mailed", // mailed
 						...(r?.status ? { isOld: true } : { isNew: true }),
 						...(formStatus === "draft"
 							? { isDraftUser: true }
@@ -10357,7 +10309,8 @@ function updateRecipientDetailsBasedOnPriorityInArray(
 
 				return {
 					...r,
-					status: "mailed",
+					// status: r?.r_priority === index + 1 ? r?.status : "mailed",
+					status: r?.status ? r?.status : "mailed",
 					...(r?.status ? { isOld: true } : { isNew: true }),
 					...(formStatus === "draft" ? { isDraftUser: true } : {}),
 				};
@@ -10400,4 +10353,5 @@ module.exports = {
 	extendExpirationDate,
 	getUserSignature,
 	selfSign,
+	extendExpirationDateByToken,
 };

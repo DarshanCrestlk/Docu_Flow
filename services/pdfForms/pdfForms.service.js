@@ -1,10 +1,9 @@
 "use strict;";
-const DBmixin = require("../../mixins/db/connection.mixin.js");
 const modelRelationsmixin = require("../../mixins/db/modelRelations.mixin.js");
 const cron = require("node-cron");
 const CacheCleanerMixin = require("../../mixins/cache.cleaner.mixin.js");
 const helperMixin = require("../../mixins/helper.mixin.js");
-const s3Mixin = require("../../mixins/libs/s3.mixin.js");
+const s3Mixin = require("../../mixins/s3.mixin.js");
 const {
 	sendReminderParams,
 	sendResendParams,
@@ -28,7 +27,6 @@ const {
 	editPdfParams,
 	extendExpirationDateParams,
 	getUserSignatureParams,
-
 } = require("./pdfForms.params.js");
 const {
 	editPdf,
@@ -59,7 +57,8 @@ const {
 	sendReminderToRecipients,
 	extendExpirationDate,
 	getUserSignature,
-		selfSign
+	selfSign,
+	extendExpirationDateByToken,
 } = require("./pdfForms.methods.js");
 
 /**
@@ -72,7 +71,6 @@ module.exports = {
 	name: "pdfForms",
 	settings: {},
 	mixins: [
-		DBmixin("pdfForms"),
 		modelRelationsmixin,
 		helperMixin,
 		s3Mixin,
@@ -83,7 +81,6 @@ module.exports = {
 		this.broker = req.broker;
 		this.sendEmail = req.sendEmail;
 	},
-	model: {},
 	dependencies: [],
 
 	actions: {
@@ -203,9 +200,12 @@ module.exports = {
 			params: getUserSignatureParams,
 			handler: getUserSignature,
 		},
-		selfSignForm:{
+		selfSignForm: {
 			handler: selfSign,
-		}
+		},
+		extendExpirationDateByToken: {
+			handler: extendExpirationDateByToken,
+		},
 	},
 	events: {},
 	created() {},

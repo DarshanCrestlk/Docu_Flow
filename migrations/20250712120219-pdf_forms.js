@@ -54,10 +54,6 @@ module.exports = {
 						key: "id",
 					},
 				},
-				// is_protected: {
-				// 	type: Sequelize.BOOLEAN,
-				// 	defaultValue: false,
-				// },
 				form_url: {
 					type: Sequelize.TEXT,
 					allowNull: true,
@@ -75,10 +71,6 @@ module.exports = {
 					type: Sequelize.STRING,
 					allowNull: true,
 				},
-				// expiration_days: {
-				// 	type: Sequelize.INTEGER,
-				// 	allowNull: true,
-				// },
 
 				expiration_date: {
 					type: Sequelize.DATE,
@@ -90,13 +82,6 @@ module.exports = {
 					type: Sequelize.INTEGER,
 					allowNull: true,
 				},
-				// settings
-				// validity_type: {
-				// 	type: Sequelize.ENUM,
-				// 	allowNull: true,
-				// 	values: ["forever", "days", "date"],
-				// 	defaultValue: "forever",
-				// },
 				initiate: {
 					type: Sequelize.BOOLEAN,
 					allowNull: true,
@@ -109,27 +94,6 @@ module.exports = {
 					type: Sequelize.BOOLEAN,
 					allowNull: true,
 				},
-				// thumbnail_key: {
-				// 	type: Sequelize.STRING,
-				// 	allowNull: true,
-				// },
-
-				// thumbnail_url: {
-				// 	type: Sequelize.TEXT,
-				// 	allowNull: true,
-				// },
-
-				// cc_email: {
-				// 	type: Sequelize.TEXT,
-				// 	allowNull: true,
-				// 	get() {
-				// 		const value = this.getDataValue("cc_email");
-				// 		return value ? JSON.parse(value) : null;
-				// 	},
-				// 	set(value) {
-				// 		this.setDataValue("cc_email", JSON.stringify(value));
-				// 	},
-				// },
 
 				attach_audit_log: {
 					type: Sequelize.BOOLEAN,
@@ -167,10 +131,6 @@ module.exports = {
 					allowNull: true,
 					defaultValue: false,
 				},
-				// expiration_at: {
-				// 	type: Sequelize.DATE,
-				// 	allowNull: true,
-				// },
 				note: {
 					type: Sequelize.TEXT,
 					allowNull: true,

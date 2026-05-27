@@ -62,39 +62,10 @@ Filters by `employee_code` prefix or numeric regexp; optional `entity_id`.
 
 Entity + fiscal year filters on related `entities`; includes leave allocation details.
 
-## Data model (`users`)
+## Data model
 
-| Column | Type | Notes |
-|--------|------|-------|
-| `id` | INTEGER PK | Auto-increment |
-| `full_name` | STRING | Required |
-| `email` | STRING | Required |
-| `password` | STRING | Nullable |
-| `role` | ENUM | `super_admin`, `internal`, `external`, `both` |
-| `user_type` | ENUM | `staff`, `both`, `consultant` |
-| `role_id` | BIGINT | → `roles_permissions` |
-| `team_id` | INTEGER | → `teams` |
-| `department_id` | INTEGER | → `departments` |
-| `job_title` | INTEGER | → `dropdown_job_titles` |
-| `entity_id` | INTEGER | → `entities` |
-| `company_id` | INTEGER | → `companies` (tenant) |
-| `employee_code` | STRING | |
-| `employment_status` | ENUM | `active`, `inactive`, `terminated` |
-| `shore_type` | ENUM | `onshore`, `offshore` |
-| `leave_id` | BIGINT | → `leave_rules` |
-| `status` | BOOLEAN | Default true |
-| `profile_pic`, `profile_bg_color`, `timezone`, `mobile_number`, `gender` | | |
-| `effective_date`, `leave_assigned_date`, `leave_assigned_by` | | Leave workflow |
-
-**Options:** `tableName: "users"`, `paranoid: false`
-
-## External model dependencies
-
-Uses models not defined in this folder (via `settings.models`):
-
-- `rolesPermission`, `rolesPermissionDetails`, `allServices`, `rolesSubModules`, `roleDetailsTeamDepartment`
-- `department`, `teams`, `entities`, `leave_rules`, `leave_allocation_details`
-- `internalEmployee`, `external_employees`, `dropdown_job_title`
+**Canonical column list:** [markdown/database/tables/users.md](../../../markdown/database/tables/users.md)  
+Update that file whenever this table changes.
 
 ## Security notes
 

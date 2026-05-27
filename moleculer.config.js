@@ -1,15 +1,8 @@
 "use strict";
-const { Middlewares } = require("moleculer");
-const MyAwesomeSerializer = require("./customSerielizer/customSerielizer");
 const { keygen } = require("./utils/redis");
+const { Middlewares } = require("moleculer");
 
-// Conditionally load OpenTelemetry based on environment variable
-const otelEnabled = process.env.OTEL_ENABLED === "true";
-const tracingModule = otelEnabled ? require("./tracing") : null;
-const OpenTelemetryMiddleware = otelEnabled
-	? require("./opentelemetry.middleware")
-	: null;
-
+// const MyAwesomeSerializer = require("./customSerielizer/customSerielizer");
 /**
  * Moleculer ServiceBroker configuration file
  *
@@ -39,9 +32,9 @@ const OpenTelemetryMiddleware = otelEnabled
  */
 module.exports = {
 	// Namespace of nodes to segment your nodes on the same network.
-	namespace: "HRMS",
+	namespace: "DOCUFLOW",
 	// Unique node identifier. Must be unique in a namespace.
-	nodeID: "slice-hrms-" + Date.now(),
+	nodeID: `DOCUFLOW-${Date.now()}`,
 	// Custom metadata store. Store here what you want. Accessing: `this.broker.metadata`
 	metadata: {},
 
@@ -53,7 +46,7 @@ module.exports = {
 			// Using colors on the output
 			colors: true,
 			// Print module names with different colors (like docker-compose for containers)
-			moduleColors: true,
+			moduleColors: false,
 			// Line formatter. It can be "json", "short", "simple", "full", a `Function` or a template string like "{timestamp} {level} {nodeID}/{mod}: {msg}"
 			formatter: "full",
 			// Custom object printer. If not defined, it uses the `util.inspect` method.
@@ -89,7 +82,6 @@ module.exports = {
 	},
 	// Define a cacher.
 	// More info: https://moleculer.services/docs/0.14/caching.html
-
 	cacher: {
 		type: "Redis",
 		options: {
@@ -118,19 +110,19 @@ module.exports = {
 			keygen,
 		},
 	},
-	// cacher: false, // Disable the built-in cacher
 
 	// Define a serializer.
 	// Available values: "JSON", "Avro", "ProtoBuf", "MsgPack", "Notepack", "Thrift".
 	// More info: https://moleculer.services/docs/0.14/networking.html#Serialization
+	serializer: "JSON",
 
 	// Number of milliseconds to wait before reject a request with a RequestTimeout error. Disabled: 0
-	requestTimeout: 45 * 60 * 1000,
+	requestTimeout: 45* 10 * 1000,
 
 	// Retry policy settings. More info: https://moleculer.services/docs/0.14/fault-tolerance.html#Retry
 	retryPolicy: {
 		// Enable feature
-		enabled: true,
+		enabled: false,
 		// Count of retries
 		retries: 2,
 		// First delay in milliseconds.
@@ -157,7 +149,7 @@ module.exports = {
 	// Tracking requests and waiting for running requests before shuting down. More info: https://moleculer.services/docs/0.14/context.html#Context-tracking
 	tracking: {
 		// Enable feature
-		enabled: true,
+		enabled: false,
 		// Number of milliseconds to wait before shuting down the process.
 		shutdownTimeout: 5000,
 	},
@@ -177,7 +169,7 @@ module.exports = {
 	// Settings of Circuit Breaker. More info: https://moleculer.services/docs/0.14/fault-tolerance.html#Circuit-Breaker
 	circuitBreaker: {
 		// Enable feature
-		enabled: true,
+		enabled: false,
 		// Threshold value. 0.5 means that 50% should be failed for tripping.
 		threshold: 0.5,
 		// Minimum request count. Below it, CB does not trip.
@@ -193,7 +185,7 @@ module.exports = {
 	// Settings of bulkhead feature. More info: https://moleculer.services/docs/0.14/fault-tolerance.html#Bulkhead
 	bulkhead: {
 		// Enable feature.
-		enabled: true,
+		enabled: false,
 		// Maximum concurrent executions.
 		concurrency: 10,
 		// Maximum size of queue
@@ -205,98 +197,57 @@ module.exports = {
 
 	errorHandler: null,
 
-	// Disable Moleculer's built-in metrics when using OpenTelemetry to avoid conflicts
+	// Enable/disable built-in metrics function. More info: https://moleculer.services/docs/0.14/metrics.html
 	metrics: {
-		enabled: !otelEnabled,
+		enabled: true,
 		// Available built-in reporters: "Console", "CSV", "Event", "Prometheus", "Datadog", "StatsD"
-		reporter: !otelEnabled
-			? {
-					type: "Prometheus",
-					options: {
-						// HTTP port
-						port: 3030,
-						// HTTP URL path
-						path: "/metrics",
-						// Default labels which are appended to all metrics labels
-						defaultLabels: (registry) => ({
-							namespace: registry.broker.namespace,
-							nodeID: registry.broker.nodeID,
-						}),
-					},
-			  }
-			: undefined,
+		reporter: {
+			type: "Prometheus",
+			options: {
+				// HTTP port
+				port: 3030,
+				// HTTP URL path
+				path: "/metrics",
+				// Default labels which are appended to all metrics labels
+				defaultLabels: (registry) => ({
+					namespace: registry.broker.namespace,
+					nodeID: registry.broker.nodeID,
+				}),
+			},
+		},
 	},
 
 	// Enable built-in tracing function. More info: https://moleculer.services/docs/0.14/tracing.html
-	// Disable Moleculer's built-in tracing when using OpenTelemetry to avoid conflicts
 	tracing: {
-		enabled: !otelEnabled,
+		enabled: true,
 		// Available built-in exporters: "Console", "Datadog", "Event", "EventLegacy", "Jaeger", "Zipkin"
-		exporter: !otelEnabled
-			? {
-					type: "Console", // Console exporter is only for development!
-					options: {
-						// Custom logger
-						logger: null,
-						// Using colors
-						colors: true,
-						// Width of row
-						width: 100,
-						// Gauge width in the row
-						gaugeWidth: 40,
-					},
-			  }
-			: undefined,
+		exporter: {
+			type: "Console", // Console exporter is only for development!
+			options: {
+				// Custom logger
+				logger: null,
+				// Using colors
+				colors: true,
+				// Width of row
+				width: 100,
+				// Gauge width in the row
+				gaugeWidth: 40,
+			},
+		},
 	},
 
 	// Register custom middlewares
-	middlewares: [
-		...(otelEnabled && OpenTelemetryMiddleware
-			? [OpenTelemetryMiddleware]
-			: []),
-		//Middlewares.Transmit.Compression("deflate"), // or "deflateRaw" or "gzip"
-	],
+	middlewares: [Middlewares.Transmit.Compression("deflate")],
+
 	// Register custom REPL commands.
 	replCommands: null,
-
-	serializer: new MyAwesomeSerializer(),
+	// serializer: new MyAwesomeSerializer(),
 	// Called after broker created.
-	created(broker) {
-		// Initialize OpenTelemetry if enabled
-		if (otelEnabled && tracingModule) {
-			const sdk = tracingModule.initialize();
-			if (sdk) {
-				// Store SDK instance on broker for cleanup
-				broker.otelSDK = sdk;
-				broker.logger.info("[OpenTelemetry] Initialized successfully");
-			} else {
-				broker.logger.warn("[OpenTelemetry] Failed to initialize");
-			}
-		}
-		// Ensure tracer has a stop method if it exists (for compatibility)
-		if (broker.tracer && typeof broker.tracer.stop !== "function") {
-			broker.tracer.stop = async () => {
-				// No-op if tracer doesn't have stop method
-			};
-		}
-	},
+	created(broker) {},
 
 	// Called after broker started.
 	async started(broker) {},
 
 	// Called after broker stopped.
-	async stopped(broker) {
-		// Shutdown OpenTelemetry SDK gracefully
-		if (broker.otelSDK) {
-			try {
-				await broker.otelSDK.shutdown();
-				broker.logger.info("[OpenTelemetry] Shutdown successfully");
-			} catch (error) {
-				broker.logger.error(
-					"[OpenTelemetry] Error during shutdown:",
-					error
-				);
-			}
-		}
-	},
+	async stopped(broker) {},
 };

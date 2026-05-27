@@ -2970,23 +2970,10 @@ async function getUserFields(ctx) {
 									"full_name",
 									"email",
 									"company_id",
-									"user_type",
-									"job_title",
-								],
-								include: [
-									{
-										model: this.settings.models
-											.dropdown_job_title,
-										where: {
-											status: 1,
-										},
-										attributes: [
-											"id",
-											"dropdown_value",
-											"status",
-										],
-										required: false,
-									},
+									"type",
+									"user_from",
+									"profile_pic",
+									"profile_bg_color",
 								],
 								required: false,
 							},
@@ -3010,18 +2997,10 @@ async function getUserFields(ctx) {
 							"full_name",
 							"email",
 							"company_id",
-							"user_type",
-							"job_title",
-						],
-						include: [
-							{
-								model: this.settings.models.dropdown_job_title,
-								where: {
-									status: 1,
-								},
-								attributes: ["id", "dropdown_value", "status"],
-								required: false,
-							},
+							"type",
+							"user_from",
+							"profile_pic",
+							"profile_bg_color",
 						],
 						required: false,
 					},

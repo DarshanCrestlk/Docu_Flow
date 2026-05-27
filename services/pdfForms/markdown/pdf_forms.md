@@ -136,68 +136,9 @@ stateDiagram-v2
 
 ## Data models (tables)
 
-### `pdf_forms` — `pdfForms.model.js`
+**Canonical column definitions:** [markdown/database/INDEX.md](../../../markdown/database/INDEX.md)
 
-Central document record.
-
-| Column | Notes |
-|--------|-------|
-| `document_id` | External doc id string |
-| `company_id` | Tenant FK |
-| `file_id` | → `pdf_form_files` |
-| `title`, `size`, `note` | |
-| `form_url`, `form_original_url`, `key`, `form_original_key` | S3 locations |
-| `status` | Lifecycle enum |
-| `is_template`, `initiate`, `self_signed` | |
-| `expiration_date`, `reminder_days` | |
-| `attach_audit_log`, `audit_log_file_url`, `combined_file_url` | |
-| `email_template`, `email_subject`, `form_token` | |
-| `void_reason`, `reason_for_deletion` | |
-| `created_by` | → `users` |
-| `is_deleted`, `version`, `is_priority_required` | |
-| `mailedAt` | Send timestamp |
-
-### `pdf_form_files` — `pdfFormFiles.model.js`
-
-Uploaded PDF library per company (`file_name`, `file_url`, `key`, `size`, `is_deleted`, `created_by`).
-
-### `pdf_form_recipients` — `pdfFormRecipients.model.js`
-
-Signers/viewers per form (`email`, `name`, `token`, `role`, `type`, `status`, `r_priority`, `color`, `message_id`, decline fields, `viewedAt`).
-
-### `pdf_form_fields` — `pdfFormFields.model.js`
-
-Placed fields (`uuid_field_id`, coordinates, `pageIndex`, `field_Data`, `type`, `status`, font/date settings).
-
-### `pdf_fields_options` — `pdfFieldsOptions.model.js`
-
-Dropdown option labels per field.
-
-### `pdf_form_radio_buttons` — `pdfFormRadioButtons.model.js`
-
-Radio group positions/options linked to fields.
-
-### `pdf_form_signature_initials` — `pdfFormSignatureInitials.model.js`
-
-Stored signer assets (`sign_uuid`, `signature_url/key`, `initials_url/key`, `user_id`, `email`).
-
-### `pdf_form_history` — `pdfFormHistory.model.js`
-
-Audit trail (`activity`, `action`, `ip`, `browser`, `performed_by`, `performer_name`).
-
-**History actions:** `voided`, `drafted`, `completed`, `corrected`, `mailed`, `viewed`, `signed`, `declined`, `bounced`, `resent`, `expired`, `reminded`
-
-### `pdf_tags` / `pdf_form_tags` — `pdfTags.model.js`, `pdfFormTags.model.js`
-
-Company tags and many-to-many form ↔ tag.
-
-### `pdf_form_reminder_logs` — `pdfFormReminderLogs.model.js`
-
-Cron reminder execution log (`execution_date`, `status`: success/failed).
-
-### `pdf_form_revoked_users` — `pdfFormRevokedUsers.model.js`
-
-Revoked recipient snapshot (`name`, `email`, `token`).
+Update `markdown/database/tables/<table>.md` whenever migrations or models change.
 
 ## Entity relationship (logical)
 

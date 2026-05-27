@@ -4,7 +4,7 @@
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		await queryInterface.createTable(
-			"users",
+			"companies",
 			{
 				id: {
 					type: Sequelize.INTEGER,
@@ -12,54 +12,53 @@ module.exports = {
 					primaryKey: true,
 					allowNull: false,
 				},
-				company_id: {
-					type: Sequelize.INTEGER,
-					allowNull: true,
-					references: {
-						model: "companies",
-						key: "id",
-					},
-				},
-				full_name: {
+				name: {
 					type: Sequelize.STRING,
 					allowNull: false,
 				},
-				password: {
-					type: Sequelize.STRING,
-					allowNull: true,
-				},
-				email: {
+				phone_no: {
 					type: Sequelize.STRING,
 					allowNull: false,
 				},
-				mobile_number: {
+				from_email_name: {
 					type: Sequelize.STRING,
-					allowNull: true,
-				},
-				profile_bg_color: {
-					type: Sequelize.STRING,
-					allowNull: true,
-				},
-				type: {
-					type: Sequelize.ENUM("super_admin","admin", "user"),
 					allowNull: false,
 				},
-				profile_pic: {
+				from_email: {
+					type: Sequelize.STRING,
+					allowNull: false,
+				},
+				industry: {
+					type: Sequelize.STRING,
+					allowNull: false,
+				},
+				address: {
+					type: Sequelize.STRING,
+					allowNull: false,
+				},
+				country: {
+					type: Sequelize.STRING,
+					allowNull: false,
+				},
+				logo: {
 					type: Sequelize.STRING,
 					allowNull: true,
 				},
-				timezone: {
+				theme: {
 					type: Sequelize.STRING,
 					allowNull: true,
 				},
-				user_from: {
-					type: Sequelize.ENUM("HRMS", "ATS", "DOCU_FLOW"),
+				themejson: {
+					type: Sequelize.JSON,
 					allowNull: true,
-					comment: "user can be from HRMS or ATS or own app user"
 				},
-
-				status: {
-					type: Sequelize.ENUM("active", "inactive"),
+				company_domain: {
+					type: Sequelize.STRING,
+					allowNull: true,
+				},
+				document_storage: {
+					type: Sequelize.BIGINT,
+					allowNull: true,
 				},
 				createdAt: {
 					type: Sequelize.DATE,
@@ -73,12 +72,13 @@ module.exports = {
 			},
 			{
 				paranoid: false,
-				tableName: "users",
+				tableName: "companies",
 			}
 		);
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.dropTable("users");
+		await queryInterface.dropTable("companies");
 	},
 };
+

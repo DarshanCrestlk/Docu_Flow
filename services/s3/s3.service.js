@@ -1,7 +1,7 @@
 "use strict";
-const RESPONSES = require("../../constants/messages");
+const RESPONSES = require("../../config/constants/messages.js");
 const { MoleculerError } = require("moleculer").Errors;
-const S3mixin = require("../../mixins/libs/s3.mixin");
+const S3mixin = require("../../mixins/s3.mixin");
 const fs = require("fs");
 const path = require("path");
 const cron = require("node-cron");

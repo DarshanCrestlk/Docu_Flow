@@ -1,12 +1,12 @@
 "use strict";
-const RESPONSES = require("../../constants/responses.constants");
+const RESPONSES = require("../../config/constants/messages.js");
 
 const Users = require("./models/users.model");
 const DBmixin = require("../../mixins/db/connection.mixin");
 const modelRelationsmixin = require("../../mixins/db/modelRelations.mixin");
 const helperMixin = require("../../mixins/helper.mixin");
 const CacheCleanerMixin = require("../../mixins/cache.cleaner.mixin");
-const { cache } = require("../../constants/cache.constants");
+// const { cache } = require("../../constants/cache.constants");
 const { Op, Sequelize } = require("sequelize");
 
 module.exports = {
@@ -33,14 +33,12 @@ module.exports = {
 					id: "string",
 				},
 			},
-			cache,
 			async handler(ctx) {
 				const user = await this.getById(ctx, this.adapter.model);
 				return user;
 			},
 		},
 		getAllUsers: {
-			cache,
 			async handler(ctx) {
 				const response = await this.getAllUsers(
 					ctx,
@@ -51,7 +49,7 @@ module.exports = {
 			},
 		},
 		getAllUsersForDropDowns: {
-			cache,
+
 			async handler(ctx) {
 				const response = await this.getAllUsersForDropDowns(
 					ctx,
@@ -62,7 +60,6 @@ module.exports = {
 			},
 		},
 		getAllUsersForEmployeeCode: {
-			cache,
 			async handler(ctx) {
 				const response = await this.getAllUsersForEmployeeCode(
 					ctx,

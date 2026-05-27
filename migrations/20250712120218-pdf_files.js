@@ -52,10 +52,6 @@ module.exports = {
 					allowNull: true,
 					defaultValue: false,
 				},
-				// is_flag: {
-				// 	type: Sequelize.BOOLEAN,
-				// 	allowNull: true,
-				// },
 				createdAt: {
 					type: Sequelize.DATE,
 					allowNull: true,

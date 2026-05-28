@@ -1,5 +1,6 @@
 const usersModel = require("../../../services/users/models/users.model");
 const companiesModel = require("../../../services/companies/models/companies.model");
+const settingsModel = require("../../../services/settings/models/settings.model");
 
 const pdfFormsModel = require("../../../services/pdfForms/models/pdfForms.model");
 const pdfFormFilesModel = require("../../../services/pdfForms/models/pdfFormFiles.model");
@@ -22,6 +23,7 @@ module.exports = (sequelize) => {
 	const models = {
 		companies: defineModel(sequelize, companiesModel),
 		users: defineModel(sequelize, usersModel),
+		settings: defineModel(sequelize, settingsModel),
 
 		pdfFormFiles: defineModel(sequelize, pdfFormFilesModel),
 		pdfForms: defineModel(sequelize, pdfFormsModel),
@@ -40,6 +42,8 @@ module.exports = (sequelize) => {
 	// Core / tenant relations
 	models.companies.hasMany(models.users, { foreignKey: "company_id" });
 	models.users.belongsTo(models.companies, { foreignKey: "company_id" });
+	models.companies.hasOne(models.settings, { foreignKey: "company_id" });
+	models.settings.belongsTo(models.companies, { foreignKey: "company_id" });
 
 	// PDF / e-sign domain relations
 	models.companies.hasMany(models.pdfFormFiles, { foreignKey: "company_id" });

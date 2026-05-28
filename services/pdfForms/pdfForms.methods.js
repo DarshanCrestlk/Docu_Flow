@@ -5468,7 +5468,6 @@ async function getAllFields(ctx) {
 					include: [
 						{
 							model: this.settings.models.pdfTags,
-							as: "tag_details",
 							attributes: ["id", "tag_name"],
 						},
 					],

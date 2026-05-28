@@ -6,6 +6,34 @@ module.exports = {
 
 	//Auth apis
 	"POST /auth/login": "auth.login",
+	"POST /auth/signup": "auth.signup",
+
+	// s3 apis
+	//s3
+	"POST /s3/upload": "s3.uploadToS3",
+	"POST /s3/update": "s3.updateToS3",
+	"POST /s3/stream": "s3.streamFileData",
+	"POST /s3/signed-url": "s3.getSignedURL", // for Ms office AddIns
+	// "POST /s3/delete": "s3.deleteFileFromS3",
+	"GET /s3/delete-unused-files": "s3.deleteUnUsedFiles",
+	"POST /s3/add-unusedFile": "s3.addUnUsedFile",
+
+	// //Documents Office apis (Ms Office AddIn service)
+	// "GET /office/check-app-key": "officeAddin.checkAppKey",
+	// "GET /office/file-details/:id": "officeAddin.getFileDetails",
+	// "PUT /office/unlock-pdf-editor": "officeAddin.unlockFileForPdfEditor",
+	// "POST /office/create-new-file-versions": "officeAddin.createNewFileVersions",
+	// "PUT /office/files/:id": "officeAddin.updateFile",
+	// "POST /office/upload": "officeAddin.uploadDocuments",
+	// "GET /office/file-versions/:id": "officeAddin.getFileVersions",
+	// "DELETE /office/delete-app/:id": "officeAddin.deleteOfficeAppKey",
+	// "GET /office/file-path/:id/:type": "officeAddin.getFileFolderPath",
+	// "GET /office/check-available-storage/:workspace_id/total-size/:size":
+	// 	"officeAddin.checkAvailableStorage",
+	// "POST /office/check-file-access": "officeAddin.checkFileAccess",
+
+	//Settings apis
+	"GET /settings": "settings.getSettingsList",
 
 	//PDF Forms apis
 	"POST /pdf-forms/edit-pdf-file": "pdfForms.editPdf",

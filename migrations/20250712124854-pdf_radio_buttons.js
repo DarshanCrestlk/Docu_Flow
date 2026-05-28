@@ -4,7 +4,7 @@
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		await queryInterface.createTable(
-			"pdf_radio_buttons",
+			"pdf_form_radio_buttons",
 			{
 				id: {
 					type: Sequelize.INTEGER,
@@ -91,12 +91,12 @@ module.exports = {
 			},
 			{
 				timestamps: true,
-				tableName: "pdf_radio_buttons",
+				tableName: "pdf_form_radio_buttons",
 			}
 		);
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.dropTable("pdf_radio_buttons");
+		await queryInterface.dropTable("pdf_form_radio_buttons");
 	},
 };

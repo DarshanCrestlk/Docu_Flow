@@ -17,7 +17,6 @@ module.exports = {
 		helperMixin,
 		CacheCleanerMixin(["users"]),
 	],
-	model: Users,
 
 	dependencies: [],
 
@@ -31,7 +30,7 @@ module.exports = {
 				},
 			},
 			async handler(ctx) {
-				const user = await this.getById(ctx, this.adapter.model);
+				const user = await this.getById(ctx);
 				return user;
 			},
 		},

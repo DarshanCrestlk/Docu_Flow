@@ -427,7 +427,7 @@ module.exports = {
 							401
 						);
 					}
-				}  else {
+				} else {
 					// const fetchedToken = req.headers.authorization
 					// 	? req.headers.authorization.split(" ")[1]
 					// 	: null;
@@ -486,8 +486,7 @@ module.exports = {
 			}
 		},
 	},
-	events: {
-	},
+	events: {},
 
 	actions: {
 		/**

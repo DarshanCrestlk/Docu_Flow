@@ -18,8 +18,6 @@ module.exports = {
 		CacheCleanerMixin(["companies"]),
 	],
 
-	model: Companies,
-
 	dependencies: [],
 
 	actions: {

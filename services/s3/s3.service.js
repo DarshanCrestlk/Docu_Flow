@@ -5,13 +5,13 @@ const S3mixin = require("../../mixins/s3.mixin");
 const fs = require("fs");
 const path = require("path");
 const cron = require("node-cron");
-const uploadDir = path.resolve(__dirname, "../assets/uploads") || (process.cwd() + "/assets/uploads");
+const uploadDir = path.resolve(__dirname, "../../assets/uploads");
 if (!fs.existsSync(uploadDir)) {
 	fs.mkdirSync(uploadDir, { recursive: true });
 }
 const helperMixin = require("../../mixins/helper.mixin");
 const modelRelationsmixin = require("../../mixins/db/modelRelations.mixin");
-var convertapi = require("convertapi")(`${process.env.CONVERT_API_KEY}`);
+const convertapi = require("convertapi")(`${process.env.CONVERT_API_KEY}`);
 const AWS = require("aws-sdk");
 AWS.config.update({
 	accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,

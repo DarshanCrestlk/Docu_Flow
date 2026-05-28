@@ -29,6 +29,18 @@ const UAParser = require("ua-parser-js");
 const forge = require("node-forge");
 const { documentTemplate } = require("../../templates/templates.js");
 
+/**
+ * Compose or update a PDF form/template (critical path).
+ *
+ * Use cases:
+ * - Create form/template draft or send for signature (create, initiate, duplicate)
+ * - Edit in-flight form: recipients, fields, tags, email template (edit + form)
+ * - Guard completed/declined/voided/deleted documents
+ * - Persist recipients, fields, options, radios; trigger outbound emails when not draft
+ *
+ * @param {import('moleculer').Context} ctx
+ * @this {import('moleculer').Service}
+ */
 async function editPdf(ctx) {
 	const t = await sequelize.transaction();
 	try {
@@ -558,6 +570,11 @@ async function verifyPDFToken(ctx) {
 }
 
 // Helper functions
+/**
+ * Resolve file metadata for compose: new upload, template copy, or edit retention.
+ * Use cases: S3 key/url, thumbnail, duplicate from template, edit existing file row.
+ * @this {import('moleculer').Service}
+ */
 async function handleFileDetails(
 	mode,
 	contentType,
@@ -2020,6 +2037,11 @@ async function createFieldOptionsAndRadioButtons(fieldRecords, companyId, t) {
 	}
 }
 
+/**
+ * Send signing invitation / notification emails after compose or recipient changes.
+ * Use cases: priority vs parallel routing, template slugs, first signer in sequence.
+ * @this {import('moleculer').Service}
+ */
 async function sendEmailsToRecipients(
 	formId,
 	companyData,
@@ -3114,6 +3136,17 @@ async function getUserFields(ctx) {
 	}
 }
 
+/**
+ * Recipient signing: apply field values, signatures, and PDF updates (high load).
+ *
+ * Use cases:
+ * - Multipart upload of signed PDF bytes and field JSON
+ * - Digital / drawn signatures, initials, audit log, completion workflow
+ * - Parallel vs sequential recipient priority and next-signer emails
+ *
+ * @param {import('moleculer').Context} ctx
+ * @this {import('moleculer').Service}
+ */
 async function fillFormFields(ctx) {
 	const t = await sequelize.transaction({
 		isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
@@ -9596,6 +9629,16 @@ async function selfSign(ctx) {
 // 	}
 // }
 
+/**
+ * Edit-mode recipient diffing: add/remove/change signers without breaking completed steps.
+ *
+ * Use cases:
+ * - Revoke removed recipients, re-mail new/changed roles
+ * - Preserve completed recipients when editor saves form
+ * - Sync S3 keys when document file is replaced during edit
+ *
+ * @this {import('moleculer').Service}
+ */
 async function prepareRecipientAndEditForm(
 	fileDetails,
 	oldFormData,

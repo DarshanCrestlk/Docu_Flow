@@ -1,8 +1,11 @@
 # PDF Forms Service (`pdfForms`)
 
-**Source:** `services/pdfForms/pdfForms.service.js`  
-**Business logic:** `services/pdfForms/pdfForms.methods.js` (~10k LOC)  
-**Validation:** `services/pdfForms/pdfForms.params.js`  
+**Facade:** `services/pdfForms/pdfForms.service.js` (delegates to domain services)
+**Architecture:** [ARCHITECTURE.md](./ARCHITECTURE.md)
+**Business logic:** `services/pdfForms/pdfForms.methods.js` (~10k LOC, shared mixin)
+**Validation:** `services/pdfForms/pdfForms.params.js`
+
+**Domain services:** `pdfFormCompose`, `pdfFormSigning`, `pdfFormFiles`, `pdfFormNotify`, `pdfFormJobs`, `pdfFormCatalog`, `pdfFormLifecycle`
 **Models:** `services/pdfForms/models/*.model.js`
 
 ## Role

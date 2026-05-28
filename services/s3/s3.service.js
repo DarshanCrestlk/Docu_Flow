@@ -5,7 +5,9 @@ const S3mixin = require("../../mixins/s3.mixin");
 const fs = require("fs");
 const path = require("path");
 const cron = require("node-cron");
-const uploadDir = path.resolve(__dirname, "../../assets/uploads");
+const uploadDir = process.env.UPLOAD_DIR
+	? path.resolve(process.cwd(), process.env.UPLOAD_DIR)
+	: path.resolve(__dirname, "../../assets/uploads");
 if (!fs.existsSync(uploadDir)) {
 	fs.mkdirSync(uploadDir, { recursive: true });
 }

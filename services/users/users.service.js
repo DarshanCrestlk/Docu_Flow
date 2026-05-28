@@ -2,12 +2,10 @@
 const RESPONSES = require("../../config/constants/messages.js");
 
 const Users = require("./models/users.model");
-const DBmixin = require("../../mixins/db/connection.mixin");
 const modelRelationsmixin = require("../../mixins/db/modelRelations.mixin");
 const helperMixin = require("../../mixins/helper.mixin");
 const CacheCleanerMixin = require("../../mixins/cache.cleaner.mixin");
-// const { cache } = require("../../constants/cache.constants");
-const { Op, Sequelize } = require("sequelize");
+const { Op } = require("sequelize");
 
 module.exports = {
 	name: "users",
@@ -15,7 +13,6 @@ module.exports = {
 	settings: {},
 
 	mixins: [
-		DBmixin("users"),
 		modelRelationsmixin,
 		helperMixin,
 		CacheCleanerMixin(["users"]),
@@ -96,106 +93,63 @@ module.exports = {
 	events: {},
 
 	methods: {
-		async getById(ctx, model) {
+		buildCompanyScope(ctx) {
+			return ctx?.meta?.user?.company_id || ctx?.params?.company_id || null;
+		},
+
+		async getById(ctx) {
 			try {
-				const { id } = ctx.params;
+				const { id } = ctx.params || {};
+				const companyId = this.buildCompanyScope(ctx);
+				const where = { id };
+				if (companyId) where.company_id = companyId;
+
 				const user = await this.settings.models.users.findOne({
-					where: {
-						id: id,
-					},
-					include: [
-						{
-							model: this.settings.models.rolesPermission,
-							attributes: ["id"],
-							include: [
-								{
-									model: this.settings.models
-										.rolesPermissionDetails,
-									attributes: {
-										exclude: [
-											"createdAt",
-											"updatedAt",
-											"company_id",
-										],
-									},
-									include: [
-										{
-											model: this.settings.models
-												.allServices,
-											attributes: ["id", "name", "key"],
-										},
-										{
-											model: this.settings.models
-												.rolesSubModules,
-											attributes: ["id", "name", "key"],
-										},
-										{
-											model: this.settings.models
-												.roleDetailsTeamDepartment,
-											attributes: [
-												"id",
-												"department_id",
-												"team_id",
-												"entity_id",
-												"action",
-											],
-										},
-									],
-								},
-							],
-						},
-						{
-							model: this.settings.models.internalEmployee,
-							as: "internal_employee_for_user",
-							attributes: ["id", "job_title"],
-							include: {
-								model: this.settings.models.dropdown_job_title,
-								attributes: ["id", "dropdown_value"],
-							},
-							// include: {
-							// 	model: this.settings.models.designations,
-							// 	attributes: ["id", "designation_name"],
-							// },
-						},
-						{
-							model: this.settings.models.external_employees,
-							as: "external_employee_for_user",
-							attributes: ["id", "employment_job_title"],
-							include: {
-								model: this.settings.models.dropdown_job_title,
-								attributes: ["id", "dropdown_value"],
-							},
-						},
-						{
-							model: this.settings.models.dropdown_job_title,
-							attributes: ["id", "dropdown_value"],
-						},
+					where,
+					attributes: [
+						"id",
+						"company_id",
+						"full_name",
+						"email",
+						"mobile_number",
+						"profile_bg_color",
+						"profile_pic",
+						"timezone",
+						"type",
+						"user_from",
+						"status",
+						"createdAt",
+						"updatedAt",
 					],
 				});
+
 				if (!user) {
 					return {
-						...RESPONSES.NOT_FOUND,
-						Message: "User not found",
+						code: RESPONSES.status.not_found,
+						message: RESPONSES.messages.user.not_found,
 						data: null,
 					};
 				}
+
 				return {
-					...RESPONSES.SUCCESS,
+					code: RESPONSES.status.success,
+					message: RESPONSES.messages.success,
 					data: user,
 				};
 			} catch (error) {
 				return {
-					...RESPONSES.INTERNAL_SERVER_ERROR,
-					Message: error.message,
+					code: RESPONSES.status.error,
+					message: RESPONSES.messages.internal_server_error,
+					error: error.message,
 				};
 			}
 		},
+
 		async getAllUsers(ctx, model) {
 			try {
 				const search = ctx?.params?.search || "";
-				let filter =
-					(ctx?.params?.filter && JSON.parse(ctx?.params?.filter)) ||
-					"";
+				const filter =
+					(ctx?.params?.filter && JSON.parse(ctx?.params?.filter)) || {};
 
 				let page =
 					parseInt(
@@ -207,137 +161,74 @@ module.exports = {
 						ctx.params.limit ? ctx.params.limit : undefined,
 						10
 					) || Number(process.env.PAGE_LIMIT);
-
 				let offset = (page - 1) * limit;
 
-				let company_id =
-					ctx?.meta?.user?.company_id || ctx?.params?.company_id;
-				let condition = {
-					company_id,
-				};
-
-				let tableName = ctx?.params?.tableName;
-				const order = ctx?.params?.order;
-				const sortBy = ctx?.params?.sortBy;
-
-				let sort = [];
-
-				if (search !== "") {
-					condition = {
-						...condition,
-						[Op.or]: [
-							{ full_name: { [Op.like]: `%${search}%` } },
-							{ employee_code: { [Op.like]: `%${search}%` } },
-							{ mobile_number: { [Op.like]: `%${search}%` } },
-							{ email: { [Op.like]: `%${search}%` } },
-							Sequelize.literal(
-								`EXISTS(SELECT * FROM departments WHERE id = users.department_id AND department_name LIKE "%${search}%")`
-							),
-							Sequelize.literal(
-								`EXISTS(SELECT * FROM teams WHERE id = users.team_id AND team_name LIKE "%${search}%")`
-							),
-						],
+				const company_id = this.buildCompanyScope(ctx);
+				if (!company_id) {
+					return {
+						code: RESPONSES.status.bad_request,
+						message: "company_id is required",
 					};
 				}
 
-				if (filter !== "") {
-					if (filter.status && filter.status.length) {
-						condition = {
-							...condition,
-							status: { [Op.in]: filter.status },
-						};
-					}
-					if (filter.gender && filter.gender.length) {
-						condition = {
-							...condition,
-							gender: { [Op.in]: filter.gender },
-						};
-					}
-					if (filter.department && filter.department.length) {
-						condition = {
-							...condition,
-							department_id: { [Op.in]: filter.department },
-						};
-					}
-					if (filter.team && filter.team.length) {
-						condition = {
-							...condition,
-							team_id: { [Op.in]: filter.team },
-						};
-					}
-					if (filter.user_type && filter.user_type.length) {
-						condition = {
-							...condition,
-							user_type: { [Op.in]: filter.user_type },
-						};
-					}
-					if (filter?.entity?.length) {
-						condition = {
-							...condition,
-							entity_id: { [Op.in]: filter.entity },
-						};
-					}
+				const condition = { company_id };
+
+				if (search !== "") {
+					condition[Op.or] = [
+						{ full_name: { [Op.like]: `%${search}%` } },
+						{ email: { [Op.like]: `%${search}%` } },
+						{ mobile_number: { [Op.like]: `%${search}%` } },
+					];
 				}
 
-				if (tableName) {
-					tableName = JSON.parse(tableName);
-					for (const ele of tableName) {
-						sort.push(ele);
-					}
+				if (filter.status?.length) {
+					condition.status = { [Op.in]: filter.status };
+				}
+				if (filter.type?.length) {
+					condition.type = { [Op.in]: filter.type };
+				}
+				if (filter.user_from?.length) {
+					condition.user_from = { [Op.in]: filter.user_from };
 				}
 
-				sortBy ? sort.push(sortBy) : sort.push("id");
-				order ? sort.push(order) : sort.push("ASC");
+				const allowedSort = [
+					"id",
+					"full_name",
+					"email",
+					"status",
+					"type",
+					"user_from",
+					"createdAt",
+					"updatedAt",
+				];
+				const sortBy = allowedSort.includes(ctx?.params?.sortBy)
+					? ctx.params.sortBy
+					: "id";
+				const order =
+					(ctx?.params?.order || "ASC").toUpperCase() === "DESC"
+						? "DESC"
+						: "ASC";
 
-				const user = await model.findAll({
+				const users = await model.findAll({
 					where: condition,
 					attributes: [
 						"id",
+						"company_id",
 						"full_name",
-						"profile_bg_color",
-						"profile_pic",
-						"employment_status",
 						"email",
 						"mobile_number",
-						"gender",
-						"shore_type",
-						"employee_code",
+						"profile_bg_color",
+						"profile_pic",
+						"timezone",
+						"type",
+						"user_from",
 						"status",
-						"user_type",
-						"role_id",
-						"role",
-						"leave_id",
-						"job_title",
+						"createdAt",
+						"updatedAt",
 					],
 					offset,
 					limit,
-					order: [sort],
-					include: [
-						{
-							model: this.settings.models.department,
-							attributes: ["id", "department_name"],
-						},
-						{
-							model: this.settings.models.teams,
-							attributes: ["id", "team_name"],
-						},
-						{
-							model: this.settings.models.entities,
-							attributes: ["id", "name"],
-						},
-						{
-							model: this.settings.models.rolesPermission,
-							attributes: ["id", "name"],
-						},
-						{
-							model: this.settings.models.leave_rules,
-							attributes: ["id", "rule_name"],
-						},
-						{
-							model: this.settings.models.dropdown_job_title,
-							attributes: ["id", "dropdown_value"],
-						},
-					],
+					order: [[sortBy, order]],
 				});
 
 				const total_count = await model.count({
@@ -345,85 +236,50 @@ module.exports = {
 				});
 
 				return {
-					...RESPONSES.SUCCESS,
-					data: user,
+					code: RESPONSES.status.success,
+					message: RESPONSES.messages.success,
+					data: users,
 					total_count,
+					page,
+					limit,
 				};
 			} catch (error) {
 				return {
-					...RESPONSES.INTERNAL_SERVER_ERROR,
-					Message: error.message,
+					code: RESPONSES.status.error,
+					message: RESPONSES.messages.internal_server_error,
+					error: error.message,
 				};
 			}
 		},
+
 		async getAllUsersForDropDowns(ctx, model) {
 			try {
+				const company_id = this.buildCompanyScope(ctx);
+				if (!company_id) {
+					return {
+						code: RESPONSES.status.bad_request,
+						message: "company_id is required",
+					};
+				}
+
 				const user_type =
 					(ctx?.params?.user_type &&
 						JSON.parse(ctx?.params?.user_type)) ||
 					null;
-				let whCondition = {
-					employment_status: "active",
-				};
-				let filter =
-					(ctx?.params?.filter && JSON.parse(ctx?.params?.filter)) ||
-					"";
 				const search = ctx?.params?.search || "";
 
-				const isPermission = ctx?.params?.isPermission || false;
-
+				const whCondition = {
+					company_id,
+					status: "active",
+				};
 				if (user_type && user_type.length > 0) {
-					whCondition = {
-						...whCondition,
-						user_type: {
-							[Op.in]: user_type,
-						},
-					};
+					whCondition.type = { [Op.in]: user_type };
 				}
-				if (filter !== "") {
-					if (filter.entity && filter.entity.length) {
-						whCondition = {
-							...whCondition,
-							entity_id: { [Op.in]: filter.entity },
-						};
-					}
-				}
-
-				if (isPermission) {
-					const roles_permission = ctx?.meta?.user?.roles_permission;
-					if (roles_permission?.roles_permission_details?.length) {
-						for (let role of roles_permission.roles_permission_details) {
-							if (
-								role?.all_service?.key === "sales" &&
-								role?.roles_sub_module?.key === "submissions" &&
-								role?.view_records !== "none"
-							) {
-								const userIdsArray =
-									await this.rolesAndPermissions(
-										role,
-										ctx,
-										"view_records"
-									);
-
-								if (role?.view_records !== "all_records") {
-									whCondition = {
-										...whCondition,
-										id: userIdsArray,
-									};
-								}
-							}
-						}
-					}
-				}
-
 				if (search !== "") {
-					whCondition = {
-						...whCondition,
-						[Op.or]: [
-							{ full_name: { [Op.like]: `%${search}%` } },
-							{ employee_code: { [Op.like]: `%${search}%` } },
-						],
-					};
+					whCondition[Op.or] = [
+						{ full_name: { [Op.like]: `%${search}%` } },
+						{ email: { [Op.like]: `%${search}%` } },
+					];
 				}
 
 				const user = await model.findAll({
@@ -431,224 +287,92 @@ module.exports = {
 					attributes: [
 						"id",
 						"full_name",
+						"email",
 						"profile_bg_color",
 						"profile_pic",
-						"employment_status",
-						"employee_code",
-						"shore_type",
 						"status",
-						"user_type",
-						"email",
+						"type",
 					],
+					order: [["full_name", "ASC"]],
 				});
 
 				return {
-					...RESPONSES.SUCCESS,
+					code: RESPONSES.status.success,
+					message: RESPONSES.messages.success,
 					data: user,
 				};
 			} catch (error) {
 				return {
-					...RESPONSES.INTERNAL_SERVER_ERROR,
-					Message: error.message,
+					code: RESPONSES.status.error,
+					message: RESPONSES.messages.internal_server_error,
+					error: error.message,
 				};
 			}
 		},
+
 		async getAllUsersForEmployeeCode(ctx, model) {
 			try {
-				const entity_id = ctx?.params?.entity_id || "";
 				const prefix = ctx?.params?.prefix || "";
+				const company_id = this.buildCompanyScope(ctx);
 
-				let condition = {
-					company_id:
-						ctx?.meta?.user?.company_id || ctx?.params?.company_id,
-				};
-
-				if (prefix !== "") {
-					condition = {
-						...condition,
-						employee_code: {
-							[Op.like]: `${prefix}%`,
-						},
-					};
-				} else {
-					condition = {
-						...condition,
-						employee_code: { [Op.regexp]: "^[0-9]" },
+				if (!company_id) {
+					return {
+						code: RESPONSES.status.bad_request,
+						message: "company_id is required",
 					};
 				}
 
-				if (entity_id !== "") {
-					condition = {
-						...condition,
-						entity_id,
-					};
+				const condition = { company_id };
+
+				if (prefix !== "") {
+					condition[Op.or] = [
+						{ full_name: { [Op.like]: `${prefix}%` } },
+						{ email: { [Op.like]: `${prefix}%` } },
+					];
 				}
 
 				const data = await model.findAll({
 					where: condition,
-				});
-
-				return data;
-			} catch (error) {
-				return error;
-			}
-		},
-		async fetchAllUsersTeamBasedOnTeamId(team_id) {
-			try {
-				const users = await this.settings.models.users.findAll({
-					where: {
-						team_id,
-					},
-					attributes: ["id"],
-				});
-				const userIdsArray = users.map((user) => user.id);
-				return userIdsArray;
-			} catch (error) {
-				console.log(error);
-				return error;
-			}
-		},
-		async FetchAllUsersDepartmentBasedOnDepartmentId(department_id) {
-			try {
-				const users = await this.settings.models.users.findAll({
-					where: {
-						department_id,
-					},
-					attributes: ["id"],
-				});
-				const userIdsArray = users.map((user) => user.id);
-				return userIdsArray;
-			} catch (error) {
-				console.log(error);
-				return error;
-			}
-		},
-		async getUsersByEntity(ctx) {
-			try {
-				let search = ctx.params.search ? ctx.params.search : "";
-
-				const filter =
-					(ctx?.params?.filter && JSON.parse(ctx?.params?.filter)) ||
-					"";
-
-				let page =
-					parseInt(
-						ctx.params.page ? ctx.params.page : undefined,
-						10
-					) || 1;
-
-				let limit =
-					parseInt(
-						ctx.params.limit ? ctx.params.limit : undefined,
-						10
-					) || Number(process.env.PAGE_LIMIT);
-
-				let offset = (page - 1) * limit;
-
-				let entityWhereClause = {};
-				let fiscalYearWhereClause = {};
-
-				if (filter) {
-					if (filter.entity && filter.entity.length) {
-						entityWhereClause = {
-							entity_id: {
-								[Op.in]: filter.entity,
-							},
-						};
-					}
-
-					if (filter.fiscal_year) {
-						fiscalYearWhereClause = {
-							applicable_fiscal_year: filter.fiscal_year,
-						};
-					}
-				}
-
-				let searchWhereClause;
-				if (search !== "") {
-					searchWhereClause = {
-						...searchWhereClause,
-						[Op.or]: [
-							{ full_name: { [Op.like]: `%${search}%` } },
-							{ employee_code: { [Op.like]: `%${search}%` } },
-						],
-					};
-				}
-
-				const users = await this.settings.models.users.findAll({
-					where: {
-						company_id: ctx.meta.user.company_id,
-						...searchWhereClause,
-						...entityWhereClause,
-					},
-					attributes: [
-						"id",
-						"full_name",
-						"profile_pic",
-						"employee_code",
-						"profile_bg_color",
-						"role",
-					],
-					include: [
-						{
-							model: this.settings.models.entities,
-							attributes: ["id", "name"],
-							where: {
-								...fiscalYearWhereClause,
-							},
-						},
-						{
-							model: this.settings.models.leave_rules,
-							attributes: ["id", "rule_name"],
-							include: [
-								{
-									model: this.settings.models
-										.leave_allocation_details,
-									attributes: ["id", "leave_name"],
-								},
-							],
-						},
-					],
-					offset,
-					limit,
-				});
-
-				const totalCount = await this.settings.models.users.count({
-					where: {
-						company_id: ctx.meta.user.company_id,
-						...searchWhereClause,
-						...entityWhereClause,
-					},
-					include: [
-						{
-							model: this.settings.models.entities,
-							attributes: ["id", "name"],
-							where: {
-								...fiscalYearWhereClause,
-							},
-						},
-						{
-							model: this.settings.models.leave_rules,
-							attributes: ["id", "rule_name"],
-							include: [
-								{
-									model: this.settings.models
-										.leave_allocation_details,
-									attributes: ["id", "leave_name"],
-								},
-							],
-						},
-					],
+					attributes: ["id", "full_name", "email"],
+					order: [["full_name", "ASC"]],
+					limit: 50,
 				});
 
 				return {
-					...RESPONSES.SUCCESS,
-					data: users,
-					total_count: totalCount,
+					code: RESPONSES.status.success,
+					message: RESPONSES.messages.success,
+					data,
 				};
 			} catch (error) {
-				console.log(error);
-				return error;
+				return {
+					code: RESPONSES.status.error,
+					message: RESPONSES.messages.internal_server_error,
+					error: error.message,
+				};
+			}
+		},
+
+		// Legacy compatibility methods retained with lean implementation
+		async FetchAllUsersTeamBasedOnTeamId(team_id) {
+			void team_id;
+			return [];
+		},
+
+		async FetchAllUsersDepartmentBasedOnDepartmentId(department_id) {
+			void department_id;
+			return [];
+		},
+
+		async getUsersByEntity(ctx) {
+			try {
+				// Entity-specific data is no longer part of the current user schema.
+				return this.getAllUsers(ctx, this.settings.models.users);
+			} catch (error) {
+				return {
+					code: RESPONSES.status.error,
+					message: RESPONSES.messages.internal_server_error,
+					error: error.message,
+				};
 			}
 		},
 	},

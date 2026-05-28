@@ -4,7 +4,7 @@
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		await queryInterface.createTable(
-			"users",
+			"pdf_tags",
 			{
 				id: {
 					type: Sequelize.INTEGER,

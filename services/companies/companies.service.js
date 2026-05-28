@@ -2,8 +2,6 @@
 
 const RESPONSES = require("../../config/constants/messages.js");
 const Companies = require("./models/companies.model");
-
-const DBmixin = require("../../mixins/db/connection.mixin");
 const modelRelationsmixin = require("../../mixins/db/modelRelations.mixin");
 const helperMixin = require("../../mixins/helper.mixin");
 const CacheCleanerMixin = require("../../mixins/cache.cleaner.mixin");
@@ -15,7 +13,6 @@ module.exports = {
 	settings: {},
 
 	mixins: [
-		DBmixin("companies"),
 		modelRelationsmixin,
 		helperMixin,
 		CacheCleanerMixin(["companies"]),

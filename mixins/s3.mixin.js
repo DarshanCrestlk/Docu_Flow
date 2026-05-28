@@ -7,9 +7,15 @@ AWS.config.update({
 	region: process.env.AWS_S3_REGION,
 });
 const path = require("path");
-const uploadDir = path.join(__dirname, "..", "..", "assets", "uploads");
 const fs = require("fs");
-require("dotenv").config({ path: path.join(__dirname, "../../.env") });
+const uploadDir =
+	path.resolve(__dirname, "../../assets/uploads") ||
+	process.cwd() + "/assets/uploads";
+if (!fs.existsSync(uploadDir)) {
+	fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const s3 = new AWS.S3({
 	accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
 	secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,

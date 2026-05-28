@@ -4,7 +4,7 @@
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		await queryInterface.createTable(
-			"users",
+			"pdf_form_tags",
 			{
 				id: {
 					type: Sequelize.INTEGER,
@@ -20,17 +20,22 @@ module.exports = {
 						key: "id",
 					},
 				},
-				tag_name: {
-					type: Sequelize.STRING,
-					allowNull: true,
-				},
-				user_id: {
+				pdf_tag_id: {
 					type: Sequelize.INTEGER,
 					allowNull: true,
 					references: {
-						model: "users",
+						model: "pdf_tags",
 						key: "id",
 					},
+				},
+				pdf_form_id: {
+					type: Sequelize.INTEGER,
+					allowNull: true,
+					references: {
+						model: "pdf_forms",
+						key: "id",
+					},
+					onDelete: "CASCADE",
 				},
 				createdAt: {
 					type: Sequelize.DATE,

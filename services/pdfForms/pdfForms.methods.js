@@ -7794,7 +7794,7 @@ async function getEmailTemplateAndSendMail(
 		let finalTemplate = "";
 		// First get the email type and its slugs
 		const emailType =
-			await this.settings.models.sliceSealEmailTypes.findOne({
+			await this.settings.models.pdfFormEmailTypes.findOne({
 				where: {
 					label_key: type,
 				},
@@ -7824,7 +7824,7 @@ async function getEmailTemplateAndSendMail(
 			emailSubject = formEmailTemplate?.email_subject;
 			if (!emailTemplate || type !== "document_sign_request") {
 				const defaultTemplate =
-					await this.settings.models.sliceSealEmailTemplates.findOne({
+					await this.settings.models.pdfFormEmailTemplates.findOne({
 						where: {
 							email_type: emailType?.id,
 						},

@@ -35,6 +35,23 @@ module.exports = {
 	//Settings apis
 	"GET /settings": "settings.getSettingsList",
 
+	// // PDF form email library apis
+	// "GET /email-library/pdf-form": "emailLibrarys.getAllPdfFormEmails",
+	// "GET /email-library/pdf-form/types": "emailLibrarys.getPdfFormEmailTypes",
+	// "GET /email-library/pdf-form/type/:type":
+	// 	"emailLibrarys.getPdfFormEmailByType",
+	// "GET /email-library/pdf-form/:id": "emailLibrarys.getPdfFormEmailById",
+	// "POST /email-library/pdf-form": "emailLibrarys.createPdfFormEmail",
+	// "PUT /email-library/pdf-form/:id": "emailLibrarys.updatePdfFormEmail",
+
+	"GET /email-library/sliceseal": "emailLibrarys.getAllPdfFormEmails",
+	"GET /email-library/sliceseal/types": "emailLibrarys.getPdfFormEmailTypes",
+	"GET /email-library/sliceseal/type/:type":
+		"emailLibrarys.getPdfFormEmailByType",
+	"GET /email-library/sliceseal/:id": "emailLibrarys.getPdfFormEmailById",
+	"POST /email-library/sliceseal": "emailLibrarys.createPdfFormEmail",
+	"PUT /email-library/sliceseal/:id": "emailLibrarys.updatePdfFormEmail",
+
 	//PDF Forms apis
 	"POST /pdf-forms/edit-pdf-file": "pdfForms.editPdf",
 	"POST /pdf-forms/validate-pass/:token": "pdfForms.validatePassWord",
@@ -71,4 +88,10 @@ module.exports = {
 	"GET /pdf-forms/signature/:id/:email": "pdfForms.getUserSignature",
 	"POST /pdf-forms/self-sign": "pdfForms.selfSignForm",
 	// "POST /addAuditLog": "pdfForms.addAuditLog",
+
+
+
+	"POST /send-ses-email-slice-seal": "sesEmail.sendSliceSealForm",
+	"POST /ses-event-slice-seal": "sesEmail.trackEventSliceSealForm",
+
 };

@@ -14,6 +14,8 @@ const pdfFormTagsModel = require("../../../services/pdfForms/models/pdfFormTags.
 const pdfFormReminderLogsModel = require("../../../services/pdfForms/models/pdfFormReminderLogs.model");
 const pdfFormRevokedUsersModel = require("../../../services/pdfForms/models/pdfFormRevokedUsers.model");
 const pdfFormSignatureInitialsModel = require("../../../services/pdfForms/models/pdfFormSignatureInitials.model");
+const pdfFormEmailTypesModel = require("../../../services/pdfForms/models/pdfFormEmailTypes.model");
+const pdfFormEmailTemplatesModel = require("../../../services/pdfForms/models/pdfFormEmailTemplates.model");
 
 function defineModel(sequelize, def) {
 	return sequelize.define(def.name, def.define, def.options);
@@ -37,6 +39,11 @@ module.exports = (sequelize) => {
 		pdfFormReminderLogs: defineModel(sequelize, pdfFormReminderLogsModel),
 		pdfFormRevokedUsers: defineModel(sequelize, pdfFormRevokedUsersModel),
 		pdfFormSignatureInitials: defineModel(sequelize, pdfFormSignatureInitialsModel),
+		pdfFormEmailTypes: defineModel(sequelize, pdfFormEmailTypesModel),
+		pdfFormEmailTemplates: defineModel(
+			sequelize,
+			pdfFormEmailTemplatesModel
+		),
 	};
 
 	// Core / tenant relations
@@ -168,6 +175,22 @@ module.exports = (sequelize) => {
 	});
 	models.pdfFormSignatureInitials.belongsTo(models.users, {
 		foreignKey: "user_id",
+	});
+
+	// PDF form email template relations
+	models.pdfFormEmailTemplates.belongsTo(models.pdfFormEmailTypes, {
+		foreignKey: "email_type",
+		as: "email_type_details",
+	});
+
+	models.pdfFormEmailTemplates.belongsTo(models.users, {
+		foreignKey: "created_by",
+		as: "created_user_details",
+	});
+
+	models.pdfFormEmailTemplates.belongsTo(models.companies, {
+		foreignKey: "company_id",
+		as: "company_details",
 	});
 
 	return models;
